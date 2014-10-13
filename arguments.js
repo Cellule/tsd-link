@@ -27,7 +27,10 @@ this.parse = function(valid_arguments, config){
         invalid_syntax = false;
         if (valid_argument['expected']){
           i++;
-          if ((!next_argument)||(!valid_argument['expected'].test(next_argument))){
+          if (
+            (!next_argument) && (next_argument="") ||
+            (!valid_argument['expected'].test(next_argument))
+          ){
             invalidCallback(argument, next_argument,valid_argument['expected']);
             break;
           }

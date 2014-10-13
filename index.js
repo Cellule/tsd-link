@@ -27,9 +27,28 @@ function setConfigFile(end, file){
   end();
 }
 
+function updateParam(end, option){
+  if(!option) option = 'a';
+  option = option[0];
+
+  // update owner
+  if(option == 'o' || option == 'a'){
+    var ownedFiles = Object.keys(tsd.owned);
+    ownedFiles.forEach(function(fileName){
+      ownType(fileName);
+    });
+  }
+  if(option == 'd' || option == 'a'){
+    var depFiles = Object.keys(tsd.dependencies);
+    depFiles.forEach(function(fileName){
+      dependFile(fileName);
+    });
+  }
+}
+
 function fileNameCallback(name, defaultCallback){
 
-  if(/^\w[\w\-\d]*$/.test(name)){
+  if(/^\w[\w\-_\d]*$/.test(name)){
     fileNames.push(name);
     return true;
   }
@@ -48,37 +67,44 @@ var tsdFile = fs.readFileSync(config,'utf8');
 var tsd = json.parse(tsdFile);
 var tsdPath = tsd.path = tsd.path || "typings";
 
+function ownType(fileName){
+  var defPath = path.resolve(tsdPath,fileName,fileName+".d.ts");
+  var profileDefPath = path.resolve(tsdHome,fileName,fileName+".d.ts");
+  if(!fs.existsSync(defPath)){
+    console.error("Unable to find file %s", defPath);
+    return false;
+  }
+  makeLink(defPath,profileDefPath);
+  return true;
+}
+
+function dependFile(fileName){
+  var defPath = path.resolve(tsdPath,fileName,fileName+".d.ts");
+  var profileDefPath = path.resolve(tsdHome,fileName,fileName+".d.ts");
+
+  if(!fs.existsSync(profileDefPath)){
+    console.error("Unable to find file %s", profileDefPath);
+    return false;
+  }
+  makeLink(profileDefPath,defPath);
+  return true;
+}
+
 function main(){
 
   if(owning){
-    var owners = _.isObject(tsd.owners) && tsd.owners || {};
+    var owned = _.isObject(tsd.owned) && tsd.owned || {};
     fileNames.forEach(function(fileName){
-      var defPath = path.resolve(tsdPath,fileName,fileName+".d.ts");
-      var profileDefPath = path.resolve(tsdHome,fileName,fileName+".d.ts");
-      if(!fs.existsSync(defPath)){
-        console.error("Unable to find file %s", defPath);
-        return;
-      }
-      makeLink(defPath,profileDefPath);
-      owners[fileName] = {};
+      if(ownType(fileName)) owned[fileName] = {};
     });
 
-    tsd.owners = owners;
+    tsd.owned = owned;
   } else {
     var dependencies = _.isObject(tsd.dependencies) && tsd.dependencies || {};
 
     fileNames.forEach(function(fileName){
-      var defPath = path.resolve(tsdPath,fileName,fileName+".d.ts");
-      var profileDefPath = path.resolve(tsdHome,fileName,fileName+".d.ts");
-
-      if(!fs.existsSync(profileDefPath)){
-        console.error("Unable to find file %s", profileDefPath);
-        return;
-      }
-      makeLink(profileDefPath,defPath);
-      dependencies[fileName] = {};
+      if(dependFile(fileName)) dependencies[fileName] = {};
     });
-
 
     tsd.dependencies = dependencies;
   }
@@ -99,9 +125,10 @@ function makeLink(from, to){
 
 
 arguments.parse([
-     {'name': /^(-h|--help|)$/, 'expected': null, 'callback': printHelp}
+     {'name': /^(u|update)$/, 'expected': /^(a|all|o|own|d|dep|dependencies)?$/, 'callback': updateParam}
+    ,{'name': /^(-h|--help|)$/, 'expected': null, 'callback': printHelp}
     ,{'name': /^(-o|--own)$/, 'expected': null, 'callback': ownTypingFile}
-    ,{'name': /^(-c|--config)$/, 'expected': /^\w[\w\-\d]*(\.json)?$/i, 'callback': setConfigFile}
+    ,{'name': /^(-c|--config)$/, 'expected': /^\w[\w\-_\d]*(\.json)?$/i, 'callback': setConfigFile}
   ], {
     after:main,
     noMatch:fileNameCallback
