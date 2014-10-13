@@ -1,0 +1,27 @@
+{
+  "name": "tsd-link",
+  "version": "1.0.0",
+  "description": "tsd-link\r ========",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cellule/tsd-link.git"
+  },
+  "author": "Michael Ferris https://github.com/Cellule/",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Cellule/tsd-link/issues"
+  },
+  "homepage": "https://github.com/Cellule/tsd-link",
+  "dependencies": {
+    "js-beautify": "^1.5.4",
+    "json5": "^0.2.0",
+    "lodash": "^2.4.1",
+    "osenv": "^0.1.0",
+    "path": "^0.4.9",
+    "slide": "^1.1.6"
+  }
+}
