@@ -1,7 +1,7 @@
 {
   "name": "tsd-link",
   "version": "1.0.0",
-  "description": "tsd-link\",
+  "description": "tsd-link",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,7 +11,7 @@
     "url": "https://github.com/Cellule/tsd-link.git"
   },
   "bin": {
-    "tsd-link": "build\tsd-link"
+    "tsd-link": "build/tsd-link"
   },
   "author": "Michael Ferris https://github.com/Cellule/",
   "license": "ISC",
