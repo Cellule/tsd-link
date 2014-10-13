@@ -3,33 +3,4 @@
 'use strict';
 
 process.title = 'tsd-link';
-
-// Especially badass external libs.
-var findup = require('findup-sync');
-var resolve = require('resolve').sync;
-
-// Internal libs.
-/*var options = require('../lib/cli').options;
-var completion = require('../lib/completion');
-var info = require('../lib/info');*/
-var path = require('path');
-
-
-var basedir = process.cwd();
-var tsdlinkpath;
-
-
-try {
-  tsdlinkpath = resolve('tsd-link', {basedir: basedir});
-} catch (ex) {
-  tsdlinkpath = findup('lib/tsd-link.js');
-  // No tsd-link install found!
-  if (!tsdlinkpath) {
-    if (options.version) { process.exit(); }
-    if (options.help) { info.help(); }
-    info.fatal('Unable to find local tsd-link.', 99);
-  }
-}
-
-// Everything looks good. Require local tsdlink and run it.
-require(tsdlinkpath).cli();
+require("../lib/tsd-link");
