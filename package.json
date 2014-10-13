@@ -10,6 +10,9 @@
     "type": "git",
     "url": "https://github.com/Cellule/tsd-link.git"
   },
+  "bin":{
+	"tsd-link": "build\tsd-link"
+  },
   "author": "Michael Ferris https://github.com/Cellule/",
   "license": "ISC",
   "bugs": {
