@@ -121,6 +121,7 @@ function makeLink(from, to){
     fs.mkdirSync(dir);
   }
   fs.link(from,to);
+  console.log(from, " -> ", to);
 }
 
 
