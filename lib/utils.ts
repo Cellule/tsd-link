@@ -51,7 +51,7 @@ export function makeLinkBase(srcRoot: string, destRoot: string, fileName: string
   var dstPath = makePathToDefFile(destRoot, fileName);
 
   if(!fs.existsSync(srcPath)){
-    console.error("Unable to find file %s", srcPath);
+    console.error("Unable to find folder %s", srcPath);
     return false;
   }
   makeLink(srcPath,dstPath);

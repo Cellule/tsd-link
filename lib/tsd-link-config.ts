@@ -1,7 +1,6 @@
 import argParser = require("./argParser");
 import _ = require("lodash");
 var path = require("path");
-require('string.prototype.endswith');
 
 export class ConfigParser {
   public config: TsdLink.Configuration;
