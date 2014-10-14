@@ -3,4 +3,4 @@
 'use strict';
 
 process.title = 'tsd-link';
-require("../lib/tsd-link");
+require("../index");
