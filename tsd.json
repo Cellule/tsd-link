@@ -7,6 +7,12 @@
   "installed": {
     "node/node.d.ts": {
       "commit": "18ae0809e8e704c77055d55fb26b3045ac5e20dd"
+    },
+    "lodash/lodash.d.ts": {
+      "commit": "8abb240eea37beed10de955c59023d1cbd9c829f"
     }
+  },
+  "owned": {
+    "tsd-link": {}
   }
 }

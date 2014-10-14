@@ -1,30 +1,44 @@
-//valid_arguments: [{name: regex, callback: function, expected: regex}]
-// config : noMatch : (value, defaultCallback(value)) : boolean (stop on false)
-//          invalid: (argument, value, expectedValue)
-//          after: ()
-this.parse = function(valid_arguments, config){
+export class ValidArguments {
+  name: RegExp;
+  callback: (value: string) => boolean;
+  expected: RegExp;
+  constructor(name: RegExp, callback: (value: string) => boolean, expected?: RegExp){
+    this.name = name;
+    this.callback = callback;
+    this.expected = expected || null;
+  }
+}
+
+export interface ParserConfig {
+  noMatch?: (value: string, cb?: (value: string) => boolean) => boolean;
+  invalid?: (argument: string, value: string, expectedValue: string) => void;
+  after? : () => void;
+}
+
+export function parseArguments(valid_arguments: ValidArguments[], config: ParserConfig): boolean {
   var error, argument, valid_argument
-      ,invalid_syntax = true
+      ,argNotFound = true
       ,options_callbacks = []
       ,callbacks_finished_count = 0
       ,args = process.argv.slice(2);
 
-  notMatchCallback = config.noMatch ?
+  var notMatchCallback = config.noMatch ?
     config.noMatch : defaultNotMatchCallback;
-  invalidCallback = config.invalid ?
+  var invalidCallback = config.invalid ?
     config.invalid : defaultInvalidArgumentCallback;
-  afterParseCallback =  config.after ?
+  var afterParseCallback =  config.after ?
     config.after : defaultAfterParseCallback;
 
   if (args.length == 0) { afterParseCallback(); return true; }
-  for (i=0; i<args.length; i++){
-    invalid_syntax = true;
+  args: for (var i=0; i<args.length; i++){
+    argNotFound = true;
     argument = args[i];
-    next_argument = args[i+1];
-    for (j=0;j<valid_arguments.length;j++){
+    var next_argument = args[i+1];
+
+    for (var j=0;j<valid_arguments.length;j++){
       valid_argument = valid_arguments[j];
       if (valid_argument['name'].test(argument)){
-        invalid_syntax = false;
+        argNotFound = false;
         if (valid_argument['expected']){
           i++;
           if (
@@ -32,7 +46,7 @@ this.parse = function(valid_arguments, config){
             (!valid_argument['expected'].test(next_argument))
           ){
             invalidCallback(argument, next_argument,valid_argument['expected']);
-            break;
+            return false;
           }
         }
         if (valid_argument['callback']) {
@@ -41,19 +55,23 @@ this.parse = function(valid_arguments, config){
             ,'argument': valid_argument['expected'] ? next_argument : null
           });
         }
-        continue;
+        continue args;
       }
     }
-    if (invalid_syntax) { if(!notMatchCallback(argument, defaultNotMatchCallback)) break; }
+    if (argNotFound) {
+      if(!notMatchCallback(argument, defaultNotMatchCallback))
+        return false;
+    }
   }
   callbacks_finished_count = options_callbacks.length;
-  if (callbacks_finished_count == 0){
-    afterParseCallback();
+  for(var i in options_callbacks){
+    var item = options_callbacks[i];
+    if(!item['callback'](item['argument'])){
+      return false;
+    }
   }
-  options_callbacks.forEach(function(item){
-    item['callback'](item['argument']);
-  });
   afterParseCallback();
+  return true;
 }
 
 var defaultAfterParseCallback = function(){
