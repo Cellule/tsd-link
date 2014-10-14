@@ -1,10 +1,6 @@
-var fs = require("fs");
-var json = require("json5");
 import config = require("./tsd-link-config");
-var path = require("path");
 import actionLink = require("./actions/link");
 import actionUpdate = require("./actions/update");
-
 
 export function run(){
 
