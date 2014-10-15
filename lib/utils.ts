@@ -19,6 +19,7 @@ export function makeLink(from, to, cb){
 
   var printLink = function(err, res){
     if(err) {
+	  console.error(err);
       cb(err);
       return;
     }
