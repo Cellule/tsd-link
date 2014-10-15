@@ -5,7 +5,7 @@ var path = require("path");
 var json = require("json5");
 var beautify = require('js-beautify').js_beautify
 var chain = require("slide").chain;
-var prompt = require("prompt");
+var error = require("error/option");
 
 function existsChain(to, stopOnFalse, cb){
   fs.exists(to, function(exists){
@@ -13,12 +13,16 @@ function existsChain(to, stopOnFalse, cb){
   })
 }
 
-export function makeLink(from, to){
+export function makeLink(from, to, cb){
 
   var dir = path.dirname(to);
 
   var printLink = function(err, res){
-    if(err) throw err;
+    if(err) {
+      cb(err);
+      return;
+    }
+
     var linkList = [to];
     var lstatCb =  function(file, err, stats){
       if(err){
@@ -32,9 +36,11 @@ export function makeLink(from, to){
         });
       } else {
         console.log(linkList.join(" -> "));
+        cb(null);
       }
     }
     fs.lstat(to,lstatCb.bind(null,to));
+
   }
 
   chain([
@@ -71,24 +77,23 @@ export function makePathToDefFile(root: string, fileName: string){
   return path.resolve(root,fileName);
 }
 
-export function ownFile(tsdHome: string, tsdDefRoot: string, fileName: string){
-  return makeLinkBase(tsdDefRoot, tsdHome, fileName);
+export function ownFile(tsdHome: string, tsdDefRoot: string, fileName: string, cb: Function){
+  makeLinkBase(tsdDefRoot, tsdHome, fileName, cb);
 }
 
-export function dependFile(tsdHome: string, tsdDefRoot: string, fileName: string){
-  return makeLinkBase(tsdHome, tsdDefRoot, fileName);
+export function dependFile(tsdHome: string, tsdDefRoot: string, fileName: string, cb: Function){
+  makeLinkBase(tsdHome, tsdDefRoot, fileName, cb);
 }
 
-export function makeLinkBase(srcRoot: string, destRoot: string, fileName: string){
+export function makeLinkBase(srcRoot: string, destRoot: string, fileName: string, cb: Function){
   var srcPath = makePathToDefFile(srcRoot, fileName);
   var dstPath = makePathToDefFile(destRoot, fileName);
 
   if(!fs.existsSync(srcPath)){
     console.error("Unable to find folder %s", srcPath);
-    return false;
+    cb(error())
   }
-  makeLink(srcPath,dstPath);
-  return true;
+  makeLink(srcPath,dstPath, cb);
 }
 
 export function makeTsdConfigFileBase(pathToFile: string){

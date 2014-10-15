@@ -1,6 +1,7 @@
 import utils = require("../utils");
 import _ = require("lodash");
 import actionUpdate = require("./update");
+import each = require("async-each");
 
 var path = require("path");
 var fs = require("fs");
@@ -40,12 +41,17 @@ class ActionGroup implements TsdLink.IAction {
         return false;
       }
 
-      list.forEach(function(configFile){
-        actionUpdate.doUpdate(configFile,'o',config.tsdHome);
-      });
 
-      list.forEach(function(configFile){
-        actionUpdate.doUpdate(configFile,'d',config.tsdHome);
+      each(list,function(configFile, cb){
+        actionUpdate.doUpdate(configFile,'o',config.tsdHome, function(){
+          cb();
+        });
+      }, function(){
+        each(list,function(configFile, cb){
+          actionUpdate.doUpdate(configFile,'d',config.tsdHome, function(){
+            cb();
+          });
+        });
       });
       return true;
     }

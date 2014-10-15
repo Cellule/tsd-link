@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/Cellule/tsd-link",
   "dependencies": {
+    "async-each": "^0.1.4",
+    "error": "^4.3.0",
     "js-beautify": "^1.5.4",
     "json5": "^0.2.0",
     "lodash": "^2.4.1",

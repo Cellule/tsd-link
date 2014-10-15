@@ -49,7 +49,12 @@ declare module TsdLink {
     run : (config: Configuration) => boolean;
   }
   export interface ActionUpdate extends IAction {
-    doUpdate: (configFile: string, mode: string, tsdHome: string) => boolean;
+    doUpdate: (
+      configFile: string,
+       mode: string,
+       tsdHome: string,
+       updateDoneCallback: Function
+     ) => boolean;
   }
 }
 
