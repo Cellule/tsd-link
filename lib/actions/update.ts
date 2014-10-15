@@ -2,13 +2,16 @@ import utils = require("../utils");
 var _ = require("lodash");
 
 
-class ActionUpdate implements TsdLink.IAction {
-  owning: boolean;
+class ActionUpdate implements TsdLink.ActionUpdate {
+
   run(config: TsdLink.Configuration) {
-    var tsdFile = <TsdLink.TsdDefinitionFile>utils.readConfigFile(config.configFile);
+    return this.doUpdate(config.configFile, config.update.mode, config.tsdHome);
+  }
+
+  doUpdate(configFile: string, mode: string, tsdHome: string){
+    var tsdFile = <TsdLink.TsdDefinitionFile>utils.readConfigFile(configFile);
     var tsd = tsdFile.content;
 
-    var mode = config.update.mode;
     // update owner
     if(
       (mode == 'o' || mode == 'a') &&
@@ -16,7 +19,7 @@ class ActionUpdate implements TsdLink.IAction {
     ){
       var ownedFiles = Object.keys(tsd.owned);
       ownedFiles.forEach(function(fileName){
-        utils.ownFile(config.tsdHome, tsdFile.definitionPath, fileName)
+        utils.ownFile(tsdHome, tsdFile.definitionPath, fileName)
       });
     }
     if(
@@ -25,13 +28,13 @@ class ActionUpdate implements TsdLink.IAction {
     ){
       var depFiles = Object.keys(tsd.dependencies);
       depFiles.forEach(function(fileName){
-        utils.dependFile(config.tsdHome, tsdFile.definitionPath,fileName)
+        utils.dependFile(tsdHome, tsdFile.definitionPath,fileName)
       });
     }
     return true;
   }
 }
 
-var actionUpdate: TsdLink.IAction = new ActionUpdate();
+var actionUpdate: TsdLink.ActionUpdate = new ActionUpdate();
 export = actionUpdate;
 

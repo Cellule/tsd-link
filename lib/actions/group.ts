@@ -1,5 +1,7 @@
 import utils = require("../utils");
-var _ = require("lodash");
+import _ = require("lodash");
+import actionUpdate = require("./update");
+
 var path = require("path");
 var fs = require("fs");
 
@@ -26,14 +28,29 @@ class ActionGroup implements TsdLink.IAction {
         tsd[groupName].push(configFilePath);
         utils.updateConfigFile(tsdFile);
         console.log("Added file %s to group %s",configFilePath, groupName);
-      } else {
-
+        return true;
       }
-    } else {
 
+      console.error("Unable to find file %s", configFilePath);
+    } else {
+      // Updating
+      var list = tsd[groupName];
+      if(!list || !_.isArray(list) || _.isEmpty(list)){
+        console.error("Unable to find group %s", groupName);
+        return false;
+      }
+
+      list.forEach(function(configFile){
+        actionUpdate.doUpdate(configFile,'o',config.tsdHome);
+      });
+
+      list.forEach(function(configFile){
+        actionUpdate.doUpdate(configFile,'d',config.tsdHome);
+      });
+      return true;
     }
 
-    return true;
+    return false;
   }
 }
 
