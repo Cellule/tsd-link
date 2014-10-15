@@ -1,19 +1,24 @@
-var mkdirp = require('mkdirp');
+var mkdirp = require("mkdirp");
+var rmdir = require("rimraf");
 var fs = require("fs");
 var path = require("path");
 var json = require("json5");
 var beautify = require('js-beautify').js_beautify
+var chain = require("slide").chain;
+var prompt = require("prompt");
+
+function existsChain(to, stopOnFalse, cb){
+  fs.exists(to, function(exists){
+    cb(stopOnFalse && !exists, exists);
+  })
+}
 
 export function makeLink(from, to){
+
   var dir = path.dirname(to);
-  if(fs.existsSync(dir)){
-    if(fs.existsSync(to)){
-      fs.unlinkSync(to);
-    }
-  } else {
-    mkdirp.sync(dir);
-  }
-  fs.symlink(from, to, "junction", function() {
+
+  var printLink = function(err, res){
+    if(err) throw err;
     var linkList = [to];
     var lstatCb =  function(file, err, stats){
       if(err){
@@ -30,7 +35,35 @@ export function makeLink(from, to){
       }
     }
     fs.lstat(to,lstatCb.bind(null,to));
-  });
+  }
+
+  chain([
+    [existsChain, dir, false],
+    [function(exists, cb){
+      if(exists){
+        chain([
+          [existsChain, to, true],
+          [fs, "lstat", to],
+          [function(stat, cb){
+            if(!stat.isSymbolicLink()){
+              rmdir(to, function(err){
+                cb(err,true);
+              });
+            } else {
+              fs.unlink(to, function(err){
+                cb(err,true);
+              });
+            }
+          }, chain.last]
+        ], function(){cb();} );
+        return;
+      }
+      mkdirp(dir, function(err){
+        cb(err);
+      });
+    }, chain.last],
+    [fs, "symlink", from, to, "junction"]
+  ], printLink);
 
 }
 
