@@ -132,5 +132,9 @@ export function readConfigFile(pathToFile: string, dontThrowOnError?: boolean){
 }
 
 export function updateConfigFile(tsdConfigFile: TsdLink.TsdConfigFile){
+  if(!fs.existsSync(tsdConfigFile.dir))
+  {
+    mkdirp.sync(tsdConfigFile.dir);
+  }
   fs.writeFileSync(tsdConfigFile.path, beautify(json.stringify(tsdConfigFile.content), { indent_size: 2}) );
 }
