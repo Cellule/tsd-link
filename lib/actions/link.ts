@@ -1,35 +1,41 @@
 import utils = require("../utils");
-var _ = require("lodash");
-
+import _ = require("lodash");
+import each = require("async-each");
 
 class ActionLink implements TsdLink.IAction {
   run(config: TsdLink.Configuration) {
     var tsdFile = <TsdLink.TsdDefinitionFile>utils.readConfigFile(config.configFile);
     var tsd = tsdFile.content;
     var owning = config.link.owning;
-    var fileNames = config.link.files;
+    var fileNames: string[] = config.link.files;
 
+    var anyLinkDone = false;
+    var target;
+    var operation: (s1: string, s2: string, s3: string, cb: Function) => void;
     if(owning){
-      var owned = _.isObject(tsd.owned) && tsd.owned || {};
-      fileNames.forEach(function(fileName){
-        if(utils.ownFile(config.tsdHome, tsdFile.definitionPath, fileName)) {
-          owned[fileName] = {};
-        }
-      });
-
-      tsd.owned = owned;
+      target = "owned";
+      operation = utils.ownFile;
     } else {
-      var dependencies = _.isObject(tsd.dependencies) && tsd.dependencies || {};
-
-      fileNames.forEach(function(fileName){
-        if(utils.dependFile(config.tsdHome, tsdFile.definitionPath,fileName)) {
-          dependencies[fileName] = {};
-        }
-      });
-
-      tsd.dependencies = dependencies;
+      target = "dependencies";
+      operation = utils.dependFile;
     }
-    utils.updateConfigFile(tsdFile);
+
+    var targetObj = _.isObject(tsd[target]) && tsd[target] || {};
+    each(fileNames, function(fileName, cb){
+      operation(config.tsdHome, tsdFile.definitionPath, fileName, function(err){
+        if(!err){
+          targetObj[fileName] = {};
+          anyLinkDone = true;
+        }
+        cb();
+      });
+    }, function(err){
+      if(anyLinkDone){
+        tsd[target] = targetObj;
+        utils.updateConfigFile(tsdFile);
+      }
+    });
+
     return true;
   }
 }

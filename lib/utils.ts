@@ -1,19 +1,28 @@
-var mkdirp = require('mkdirp');
+var mkdirp = require("mkdirp");
+var rmdir = require("rimraf");
 var fs = require("fs");
 var path = require("path");
 var json = require("json5");
 var beautify = require('js-beautify').js_beautify
+var chain = require("slide").chain;
+var error = require("error/option");
 
-export function makeLink(from, to){
+function existsChain(to, stopOnFalse, cb){
+  fs.exists(to, function(exists){
+    cb(stopOnFalse && !exists, exists);
+  })
+}
+
+export function makeLink(from, to, cb){
+
   var dir = path.dirname(to);
-  if(fs.existsSync(dir)){
-    if(fs.existsSync(to)){
-      fs.unlinkSync(to);
+
+  var printLink = function(err, res){
+    if(err) {
+      cb(err);
+      return;
     }
-  } else {
-    mkdirp.sync(dir);
-  }
-  fs.symlink(from, to, "junction", function() {
+
     var linkList = [to];
     var lstatCb =  function(file, err, stats){
       if(err){
@@ -27,10 +36,40 @@ export function makeLink(from, to){
         });
       } else {
         console.log(linkList.join(" -> "));
+        cb(null);
       }
     }
     fs.lstat(to,lstatCb.bind(null,to));
-  });
+
+  }
+
+  chain([
+    [existsChain, dir, false],
+    [function(exists, cb){
+      if(exists){
+        chain([
+          [existsChain, to, true],
+          [fs, "lstat", to],
+          [function(stat, cb){
+            if(!stat.isSymbolicLink()){
+              rmdir(to, function(err){
+                cb(err,true);
+              });
+            } else {
+              fs.unlink(to, function(err){
+                cb(err,true);
+              });
+            }
+          }, chain.last]
+        ], function(){cb();} );
+        return;
+      }
+      mkdirp(dir, function(err){
+        cb(err);
+      });
+    }, chain.last],
+    [fs, "symlink", from, to, "junction"]
+  ], printLink);
 
 }
 
@@ -38,24 +77,23 @@ export function makePathToDefFile(root: string, fileName: string){
   return path.resolve(root,fileName);
 }
 
-export function ownFile(tsdHome: string, tsdDefRoot: string, fileName: string){
-  return makeLinkBase(tsdDefRoot, tsdHome, fileName);
+export function ownFile(tsdHome: string, tsdDefRoot: string, fileName: string, cb: Function){
+  makeLinkBase(tsdDefRoot, tsdHome, fileName, cb);
 }
 
-export function dependFile(tsdHome: string, tsdDefRoot: string, fileName: string){
-  return makeLinkBase(tsdHome, tsdDefRoot, fileName);
+export function dependFile(tsdHome: string, tsdDefRoot: string, fileName: string, cb: Function){
+  makeLinkBase(tsdHome, tsdDefRoot, fileName, cb);
 }
 
-export function makeLinkBase(srcRoot: string, destRoot: string, fileName: string){
+export function makeLinkBase(srcRoot: string, destRoot: string, fileName: string, cb: Function){
   var srcPath = makePathToDefFile(srcRoot, fileName);
   var dstPath = makePathToDefFile(destRoot, fileName);
 
   if(!fs.existsSync(srcPath)){
     console.error("Unable to find folder %s", srcPath);
-    return false;
+    cb(error())
   }
-  makeLink(srcPath,dstPath);
-  return true;
+  makeLink(srcPath,dstPath, cb);
 }
 
 export function makeTsdConfigFileBase(pathToFile: string){
