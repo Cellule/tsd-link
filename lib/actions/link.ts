@@ -4,7 +4,7 @@ var _ = require("lodash");
 
 class ActionLink implements TsdLink.IAction {
   run(config: TsdLink.Configuration) {
-    var tsdFile = utils.readConfigFile(config.configFile);
+    var tsdFile = <TsdLink.TsdDefinitionFile>utils.readConfigFile(config.configFile);
     var tsd = tsdFile.content;
     var owning = config.link.owning;
     var fileNames = config.link.files;

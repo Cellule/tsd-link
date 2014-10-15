@@ -42,11 +42,16 @@ export function parseArguments(valid_arguments: ValidArguments[], config: Parser
         if (valid_argument['expected']){
           i++;
           if (
-            (!next_argument) && (next_argument="") ||
+            ((!next_argument) && (next_argument="")) ||
             (!valid_argument['expected'].test(next_argument))
           ){
-            invalidCallback(argument, next_argument,valid_argument['expected']);
-            return false;
+            if(valid_argument['expected'].test("")){
+              next_argument = null;
+              --i;
+            } else {
+              invalidCallback(argument, next_argument,valid_argument['expected']);
+              return false;
+            }
           }
         }
         if (valid_argument['callback']) {
