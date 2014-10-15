@@ -15,6 +15,10 @@ declare module TsdLink {
     dir: string;
     path: string;
     definitionPath: string;
+    content: any;
+  }
+
+  export interface TsdDefinitionFile extends TsdConfigFile {
     content: {
       repo? : string;
       path? : string;
@@ -24,11 +28,17 @@ declare module TsdLink {
     }
   }
 
+  export interface TsdGroupFile extends TsdConfigFile {
+    content: {
+      [groupName: string] : string[];
+    }
+  }
+
   export interface Configuration {
     action: string;
     link? : { owning: boolean; files: string[] };
     update? : { mode: string };
-
+    group? : { groupName: string; action: string; };
     configFile: string;
     isWindows: boolean;
     home: string;

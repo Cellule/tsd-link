@@ -1,6 +1,7 @@
 import argParser = require("./argParser");
 import _ = require("lodash");
 var path = require("path");
+var merge = require("merge");
 
 export class ConfigParser {
   public config: TsdLink.Configuration;
@@ -27,29 +28,46 @@ export class ConfigParser {
 
   parseArguments(cb: (config: TsdLink.Configuration) => void){
     var res = argParser.parseArguments([
+      // Link options
       new argParser.ValidArguments(
         /^link$/,
         this.setAction.bind(this,"link")
       ),
       new argParser.ValidArguments(
+        /^(-o|--own)$/,
+        this.setConfig.bind(this,["link","owning"])
+      ),
+
+      // Update options
+      new argParser.ValidArguments(
         /^update$/,
         this.setAction.bind(this,"update"),
         /^(a|all|o|own|d|dep|dependencies)?$/
+      ),
+
+
+      // Group options
+      new argParser.ValidArguments(
+        /^(group)$/,
+        this.setAction.bind(this, "group"),
+        /^(update|u|save|s)?$/
+      ),
+      new argParser.ValidArguments(
+        /^(-g|--groupname)$/,
+        this.setConfig.bind(this,["group", "groupName"]),
+        /^\w[\w\-_\d]*$/
+      ),
+
+      // Global options
+      new argParser.ValidArguments(
+        /^(-c|--config)$/,
+        this.setConfig.bind(this,["configFile"]),
+        /^.*.json5?$/i
       ),
       new argParser.ValidArguments(
         /^(-h|--help|help)$/,
         this.printHelp
       ),
-      new argParser.ValidArguments(
-        /^(-o|--own)$/,
-        this.setConfig.bind(this,["link","owning"])
-      ),
-      new argParser.ValidArguments(
-        /^(-c|--config)$/,
-        this.setConfig.bind(this,["configFile"]),
-        /^\w[\w\-_\d]*(\.json)?$/i
-      ),
-
     ], {
       noMatch:this.fileNameCallback.bind(this)
     });
@@ -87,6 +105,17 @@ export class ConfigParser {
           mode: arg ? arg[0] : 'a'
         }
       break;
+      case "group":
+        this.config.group = merge.recursive(
+          {
+            groupName: "default",
+            action: arg ? arg[0] : 's'
+          },
+          this.config.group
+        )
+      break;
+      default:
+        throw "Unhandled action: "+action;
     }
     return true;
   }

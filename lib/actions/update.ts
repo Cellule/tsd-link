@@ -5,7 +5,7 @@ var _ = require("lodash");
 class ActionUpdate implements TsdLink.IAction {
   owning: boolean;
   run(config: TsdLink.Configuration) {
-    var tsdFile = utils.readConfigFile(config.configFile);
+    var tsdFile = <TsdLink.TsdDefinitionFile>utils.readConfigFile(config.configFile);
     var tsd = tsdFile.content;
 
     var mode = config.update.mode;

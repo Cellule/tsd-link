@@ -58,25 +58,38 @@ export function makeLinkBase(srcRoot: string, destRoot: string, fileName: string
   return true;
 }
 
-export function readConfigFile(pathToFile: string){
+export function makeTsdConfigFileBase(pathToFile: string){
   var resolvedPath = path.resolve(pathToFile);
-  var tsdFile;
-  try {
-    tsdFile = fs.readFileSync(resolvedPath,'utf8');
-  } catch(e) {
-    return null;
-  }
-  var content = json.parse(tsdFile);
-  var defPath = content.path = content.path || "typings";
+  var defPath = "typings";
   var dir = path.dirname(resolvedPath);
 
   var tsdConfigFile: TsdLink.TsdConfigFile = {
     fileName: path.basename(resolvedPath),
     dir: dir,
     path: resolvedPath,
-    content: content,
+    content: {},
     definitionPath: path.resolve(dir,defPath),
   }
+  return tsdConfigFile;
+}
+
+export function readConfigFile(pathToFile: string, dontThrowOnError?: boolean){
+  var resolvedPath = path.resolve(pathToFile);
+  var tsdFile;
+  try {
+    tsdFile = fs.readFileSync(resolvedPath,'utf8');
+  } catch(e) {
+    if(!dontThrowOnError) throw e;
+    return null;
+  }
+  var content = json.parse(tsdFile) || {};
+
+  var tsdConfigFile = makeTsdConfigFileBase(pathToFile);
+  tsdConfigFile.content = content;
+  if(content.path){
+    tsdConfigFile.definitionPath = path.resolve(tsdConfigFile.dir,content.path);
+  }
+
   return tsdConfigFile;
 }
 

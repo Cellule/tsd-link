@@ -14,5 +14,8 @@
   },
   "owned": {
     "tsd-link": {}
+  },
+  "dependencies": {
+    "mykoop": {}
   }
 }
