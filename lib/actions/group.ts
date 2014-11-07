@@ -18,11 +18,11 @@ class ActionGroup implements TsdLink.IAction {
     var groupName = config.group.groupName;
     var action = config.group.action;
 
-    if(action === 's'){
+    if(action === 's') {
       var configFilePath = path.resolve(config.configFile);
-      if(fs.existsSync(configFilePath)){
+      if(fs.existsSync(configFilePath)) {
         if(!tsd[groupName]) tsd[groupName] = [];
-        if(~tsd[groupName].indexOf(configFilePath)){
+        if(~tsd[groupName].indexOf(configFilePath)) {
           console.error("Config file %s already part of group %s", configFilePath, groupName);
           return false;
         }
@@ -33,10 +33,10 @@ class ActionGroup implements TsdLink.IAction {
       }
 
       console.error("Unable to find file %s", configFilePath);
-    } else {
+    } else if(action === 'u') {
       // Updating
       var list = tsd[groupName];
-      if(!list || !_.isArray(list) || _.isEmpty(list)){
+      if(!list || !_.isArray(list) || _.isEmpty(list)) {
         console.error("Unable to find group %s", groupName);
         return false;
       }
@@ -54,6 +54,15 @@ class ActionGroup implements TsdLink.IAction {
         });
       });
       return true;
+    } else if(action === 'd') {
+      if(tsd[groupName]) {
+        delete tsd[groupName];
+        utils.updateConfigFile(tsdFile);
+        console.log("Group %s cleared", groupName);
+        return true;
+      }
+      console.error("Group %s doesn't exist");
+      return false;
     }
 
     return false;

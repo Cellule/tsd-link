@@ -50,7 +50,7 @@ export class ConfigParser {
       new argParser.ValidArguments(
         /^(group)$/,
         this.setAction.bind(this, "group"),
-        /^(update|u|save|s)?$/
+        /^(update|u|save|s|delete|d)?$/
       ),
       new argParser.ValidArguments(
         /^(-g|--groupname)$/,
@@ -151,6 +151,13 @@ export class ConfigParser {
     l("      a|all : update owned and dependent definitions links");
     l("      o|own : update only owned definitions");
     l("      d|dep : update only dependent definitions");
+    l("  ");
+    l("  group: group [u|update|s|save|d|delete] default: save");
+    l("    Allows to add projects to a group");
+    l("    save: add tsd.json from this directory to the group");
+    l("    update: update all owned definition before dependencies");
+    l("    delete: remove the group");
+    l("      -g : --groupname, group name used. Default: \"default\"");
     l("  ");
     l("  -c : --config, define a config file to use. Default: tsd.json");
     l("  ");
