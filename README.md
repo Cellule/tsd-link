@@ -20,9 +20,11 @@ Usage: tsd-link [action] [-c tsd.json] [-h]
       o|own : update only owned definitions
       d|dep : update only dependent definitions
       
-  group: group [u|update|s|save] default: save
+  group: group [u|update|s|save|d|delete] default: save
     Allows to add projects to a group
-    update will update all owned definition before dependencies
+    save: add tsd.json from this directory to the group
+    update: will update all owned definition before dependencies
+    delete: remove the group
       -g : --groupname, group name used. Default: "default"
       
   
